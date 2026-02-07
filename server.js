@@ -39,6 +39,17 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tech-stack', require('./routes/techStack'));
 
+app.get("/check-env", (req, res) => {
+  res.json({
+    PORT: process.env.PORT,
+    NODE_ENV: process.env.NODE_ENV,
+    CLIENT_URL: process.env.CLIENT_URL,
+    JWT_EXPIRE: process.env.JWT_EXPIRE,
+    MONGODB_URI: process.env.MONGODB_URI ? '***SET***' : '***NOT SET***',
+    JWT_SECRET: process.env.JWT_SECRET ? '***SET***' : '***NOT SET***'
+  });
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
