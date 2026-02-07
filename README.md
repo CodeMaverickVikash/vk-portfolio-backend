@@ -152,6 +152,33 @@ backend/
 3. Use token in Authorization header: `Bearer <token>`
 4. Access protected routes
 
+## Deployment
+
+### 🚀 Deploying to Render.com
+
+This project is configured for easy deployment on Render.com with the included `render.yaml` file.
+
+**Quick Start:**
+1. Push your code to GitHub
+2. Connect your repository to Render.com
+3. Set the required environment variables on Render's dashboard
+4. Deploy!
+
+For detailed deployment instructions, see:
+- **[RENDER_QUICKSTART.md](RENDER_QUICKSTART.md)** - 5-minute quick start
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide with troubleshooting
+
+**Required Environment Variables for Production:**
+- `NODE_ENV`: `production`
+- `MONGODB_URI`: Your MongoDB Atlas connection string
+- `JWT_SECRET`: Strong random secret (generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`)
+- `CLIENT_URL`: Your deployed frontend domain
+
+### Health Check
+- Endpoint: `GET /health`
+- Automatically monitored by Render's health check system
+- No authentication required
+
 ## License
 
 ISC

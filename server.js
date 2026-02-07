@@ -30,6 +30,11 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(morgan('dev')); // Logging
 
+// Health check endpoint (for monitoring/load balancers)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tech-stack', require('./routes/techStack'));
@@ -54,7 +59,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('\n' + '='.repeat(60));
   console.log('🎉 SERVER STARTED SUCCESSFULLY!');
   console.log('='.repeat(60));
@@ -79,5 +84,32 @@ app.listen(PORT, () => {
   console.log('='.repeat(60));
   console.log('💡 Tip: Use the test-api.http file to test endpoints');
   console.log('='.repeat(60) + '\n');
+});
+
+// Graceful shutdown handler for Render.com deployments
+process.on('SIGTERM', () => {
+  console.log('\n⚠️  SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('✅ HTTP server closed');
+    // Close database connection
+    require('mongoose').connection.close(false, () => {
+      console.log('✅ MongoDB connection closed');
+      process.exit(0);
+    });
+  });
+  
+  // Force shutdown after 30 seconds
+  setTimeout(() => {
+    console.error('❌ Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 30000);
+});
+
+process.on('SIGINT', () => {
+  console.log('\n⚠️  SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('✅ HTTP server closed');
+    process.exit(0);
+  });
 });
 
