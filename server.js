@@ -60,56 +60,27 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  console.log('\n' + '='.repeat(60));
-  console.log('🎉 SERVER STARTED SUCCESSFULLY!');
-  console.log('='.repeat(60));
-  console.log(`🚀 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📡 Server running on: http://localhost:${PORT}`);
-  console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
-  console.log('='.repeat(60));
-  console.log('📚 Available Endpoints:');
-  console.log('   Auth:');
-  console.log(`   🔑 Login:         POST   http://localhost:${PORT}/api/auth/login`);
-  console.log(`   🔄 Refresh Token: POST   http://localhost:${PORT}/api/auth/refresh`);
-  console.log(`   👤 Get User:      GET    http://localhost:${PORT}/api/auth/me (Protected)`);
-  console.log(`   🚪 Logout:        POST   http://localhost:${PORT}/api/auth/logout (Protected)`);
-  console.log('');
-  console.log('   Tech Stack:');
-  console.log(`   📋 Get All:       GET    http://localhost:${PORT}/api/tech-stack`);
-  console.log(`   📊 Get Stats:     GET    http://localhost:${PORT}/api/tech-stack/stats`);
-  console.log(`   🔍 Get One:       GET    http://localhost:${PORT}/api/tech-stack/:id`);
-  console.log(`   ➕ Create:        POST   http://localhost:${PORT}/api/tech-stack (Protected)`);
-  console.log(`   ✏️  Update:        PUT    http://localhost:${PORT}/api/tech-stack/:id (Protected)`);
-  console.log(`   🗑️  Delete:        DELETE http://localhost:${PORT}/api/tech-stack/:id (Protected)`);
-  console.log('='.repeat(60));
-  console.log('💡 Tip: Use the test-api.http file to test endpoints');
-  console.log('='.repeat(60) + '\n');
+  console.log(`[Server] Started on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
 });
 
-// Graceful shutdown handler for Render.com deployments
-process.on('SIGTERM', () => {
-  console.log('\n⚠️  SIGTERM signal received: closing HTTP server');
+// Graceful shutdown handlers
+const gracefulShutdown = (signal) => {
+  console.log(`[Server] Received ${signal}, shutting down gracefully...`);
   server.close(() => {
-    console.log('✅ HTTP server closed');
-    // Close database connection
+    console.log('[Server] HTTP server closed');
     require('mongoose').connection.close(false, () => {
-      console.log('✅ MongoDB connection closed');
+      console.log('[Database] Connection closed');
       process.exit(0);
     });
   });
   
   // Force shutdown after 30 seconds
   setTimeout(() => {
-    console.error('❌ Could not close connections in time, forcefully shutting down');
+    console.error('[Server] Forced shutdown after 30s timeout');
     process.exit(1);
   }, 30000);
-});
+};
 
-process.on('SIGINT', () => {
-  console.log('\n⚠️  SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('✅ HTTP server closed');
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
