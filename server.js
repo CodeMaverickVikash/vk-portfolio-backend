@@ -16,12 +16,27 @@ const app = express();
 
 // Middleware
 app.use(helmet()); // Security headers
+// Normalize allowed origins and use a dynamic origin checker to handle
+// variations (e.g. trailing slashes) and provide clearer CORS failures.
+const allowedOrigins = [
+  (process.env.CLIENT_URL || '').replace(/\/$/, ''),
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://vk-portfolio-web.vercel.app'
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL,
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. server-to-server, curl)
+    if (!origin) return callback(null, true);
+
+    const normalized = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(normalized)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('CORS policy: This origin is not allowed.'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
