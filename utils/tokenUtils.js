@@ -6,9 +6,12 @@ const jwt = require('jsonwebtoken');
  * @returns {String} Access token
  */
 const generateAccessToken = (payload) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET is not defined in environment');
+
   return jwt.sign(
     payload,
-    process.env.JWT_SECRET,
+    secret,
     { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRE || '15m' }
   );
 };
@@ -19,9 +22,12 @@ const generateAccessToken = (payload) => {
  * @returns {String} Refresh token
  */
 const generateRefreshToken = (payload) => {
+  const secret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_SECRET;
+  if (!secret) throw new Error('No JWT refresh secret defined (JWT_REFRESH_TOKEN_SECRET or JWT_SECRET)');
+
   return jwt.sign(
     payload,
-    process.env.JWT_REFRESH_TOKEN_SECRET,
+    secret,
     { expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRE || '7d' }
   );
 };
@@ -33,7 +39,9 @@ const generateRefreshToken = (payload) => {
  */
 const verifyAccessToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET is not defined in environment');
+    return jwt.verify(token, secret);
   } catch (error) {
     throw new Error('Invalid or expired access token');
   }
@@ -46,7 +54,9 @@ const verifyAccessToken = (token) => {
  */
 const verifyRefreshToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_REFRESH_TOKEN_SECRET);
+    const secret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_SECRET;
+    if (!secret) throw new Error('No JWT refresh secret defined (JWT_REFRESH_TOKEN_SECRET or JWT_SECRET)');
+    return jwt.verify(token, secret);
   } catch (error) {
     throw new Error('Invalid or expired refresh token');
   }

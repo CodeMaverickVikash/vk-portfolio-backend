@@ -1,20 +1,10 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const TechStack = require('../models/TechStack');
+const connectDB = require('../config/db');
 
 // Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB Connected');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
 
 // Tech stack data
 const techStackData = [
@@ -913,7 +903,6 @@ const techStackData = [
 // Seed function
 const seedTechStack = async () => {
   try {
-    await connectDB();
 
     // Clear existing data
     console.log('🗑️  Clearing existing tech stack data...');
@@ -946,6 +935,16 @@ const seedTechStack = async () => {
   }
 };
 
-// Run seed
-seedTechStack();
+const start = async () => {
+  try {
+    await connectDB();
+    console.log("MongoDB Connected");
+    await seedTechStack();
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+};
+
+start();
 

@@ -5,17 +5,6 @@ const User = require('../models/User');
 // Load environment variables
 dotenv.config();
 
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB Connected');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
-
 // Seed admin user
 const seedAdmin = async () => {
   try {
@@ -50,5 +39,9 @@ const seedAdmin = async () => {
   }
 };
 
-// Run the seed function
-connectDB().then(seedAdmin);
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB Connected");
+    seedAdmin();
+  })
+  .catch(err => console.error(err));
